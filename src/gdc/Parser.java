@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -43,23 +44,22 @@ public class Parser {
 		List<HashMap<String, Object>> wordsToFind = helper.getWordsToFind(templatePath); // look up each word to search
 		for (HashMap<String, Object> rowOfWords : wordsToFind) {
 			HashMap<String, Integer> hmOccurence = new HashMap<String, Integer>();
-			
+
 			if (rowOfWords != null) {
-				if (rowOfWords.get(Helper.MAP_TOFIND_KEY_INDICATOR) != null && rowOfWords
-						.get(Helper.MAP_TOFIND_KEY_INDICATOR).equals(Helper.MAP_TOFIND_VAL_INDICATOR_INCLUDED)) {// only if it is not marked as "x"
-					
+				if (rowOfWords.get(Helper.MAP_TOFIND_KEY_INDICATOR) != null && rowOfWords.get(Helper.MAP_TOFIND_KEY_INDICATOR).equals(Helper.MAP_TOFIND_VAL_INDICATOR_INCLUDED)) {// only if it is not marked as "x"
 					wordToFind = (String) rowOfWords.get(Helper.MAP_TOFIND_KEY_VALUE);
 					HashSet<Sourcefile> searchSpace = helper.getAllFiles(fileLocation);
+
 					for (Sourcefile file : searchSpace) {
 						if (wordToFind != null && !wordToFind.isEmpty()) {
-							System.out.println(file.getFileName());
 							wordFrequency = 0;
 							String filepath = file.getFilePath();
-							
+							HashMap<String, Object> hmSheetOfWord = new HashMap<String, Object>();
+
 							switch (file.getFileExtension()) {
 							case xlsx:
 								try {
-									findInXlsx(filepath);
+									findInXlsx(filepath, hmSheetOfWord);
 								} catch (IOException e) {
 									e.printStackTrace();
 								}
@@ -82,7 +82,12 @@ public class Parser {
 								break;
 							}
 							
-							hmOccurence.put(file.getFileName(), wordFrequency);
+							if (!hmSheetOfWord.isEmpty()) {
+								hmOccurence.put("file : " + file.getFileName() + "\n" + "sheets : " + hmSheetOfWord.toString(), wordFrequency);
+							} else {
+								hmOccurence.put("file : " + file.getFileName(), wordFrequency);
+							}
+							
 						} else {
 							hmOccurence.put(file.getFileName(), null);
 						}
@@ -220,52 +225,69 @@ public class Parser {
 		System.out.println("ENDING METHOD::countInShapeXls()");
 	}
 
-	private static void findInXlsx(String filepath) throws IOException {
+	private static void findInXlsx(String filepath, HashMap<String, Object> hmSheetLocation) throws IOException {
 		System.out.println("STARTING METHOD::findInXlsx()");
+
 		FileInputStream fis = new FileInputStream(filepath);
 		XSSFWorkbook xlswb = new XSSFWorkbook(fis);
 
-		Iterator<Sheet> sheetIterator = xlswb.iterator();
-		while (sheetIterator.hasNext()) {
-			Sheet currentSheet = sheetIterator.next();
-			Iterator<Row> rowIterator = currentSheet.iterator();
+		if (xlswb != null) {
+			Iterator<Sheet> sheetIterator = xlswb.iterator();
 
-			// texts from cells
-			while (rowIterator.hasNext()) {
-				Row currentRow = rowIterator.next();
-				Iterator<Cell> cellIterator = currentRow.iterator();
-				while (cellIterator.hasNext()) {
-					Cell currentCell = cellIterator.next();
-					String strValue = "";
-					
-					switch (currentCell.getCellType()) {
-					case NUMERIC:
-						strValue = String.valueOf(currentCell.getNumericCellValue());
-						break;
-					case STRING:
-						strValue = currentCell.getStringCellValue();
-						break;
-					case FORMULA:
-						DataFormatter dataFormatter = new DataFormatter(new java.util.Locale("en", "US"));
-						dataFormatter.setUseCachedValuesForFormulaCells(true);
-						strValue = dataFormatter.formatCellValue(currentCell);
-						break;
-					default:
-						break;
+			while (sheetIterator.hasNext()) {
+				ArrayList<String> listLocationOfWords = new ArrayList<String>();
+
+				Sheet currentSheet = sheetIterator.next();
+				Iterator<Row> rowIterator = currentSheet.iterator();
+
+				// texts from cells
+				while (rowIterator.hasNext()) {
+					Row currentRow = rowIterator.next();
+					Iterator<Cell> cellIterator = currentRow.iterator();
+
+					while (cellIterator.hasNext()) {
+						Cell currentCell = cellIterator.next();
+						String strValue = "";
+						switch (currentCell.getCellType()) {
+						case NUMERIC:
+							strValue = String.valueOf(currentCell.getNumericCellValue());
+							break;
+						case STRING:
+							strValue = currentCell.getStringCellValue();
+							break;
+						case FORMULA:
+							DataFormatter dataFormatter = new DataFormatter(new java.util.Locale("en", "US"));
+							dataFormatter.setUseCachedValuesForFormulaCells(true);
+							strValue = dataFormatter.formatCellValue(currentCell);
+							break;
+						default:
+							break;
+						}
+						int freqOfWord = countOccurence(strValue);
+						if (freqOfWord > 0) {
+							listLocationOfWords.add("cell: " + intToAlphabet(currentCell.getColumnIndex())
+									+ String.valueOf(currentCell.getRowIndex() + 1));
+						}
+						wordFrequency += freqOfWord;
 					}
-					wordFrequency += countOccurence(strValue);
+				}
+				// text from shapes
+				XSSFDrawing drawing = (XSSFDrawing) currentSheet.getDrawingPatriarch();
+				countInShapeXlsx(drawing, listLocationOfWords);
+
+				if (listLocationOfWords.size() > 0) {
+					hmSheetLocation.put(currentSheet.getSheetName(), listLocationOfWords);
 				}
 			}
-			// text from shapes
-			XSSFDrawing drawing = (XSSFDrawing) currentSheet.getDrawingPatriarch();
-			countInShapeXlsx(drawing);
 		}
-		fis.close();
+
 		xlswb.close();
+		fis.close();
+
 		System.out.println("ENDING METHOD::findInXlsx()");
 	}
 
-	private static void countInShapeXlsx(ShapeContainer<XSSFShape> container) {
+	private static void countInShapeXlsx(ShapeContainer<XSSFShape> container, ArrayList<String> listLocationOfWords) {
 		System.out.println("STARTING METHOD::countInShapeXlsx()");
 		if (container != null) {
 			for (XSSFShape shape : container) {
@@ -280,11 +302,16 @@ public class Parser {
 
 				} else if (shape instanceof XSSFShapeGroup) {
 					XSSFShapeGroup shapeGroup = (XSSFShapeGroup) shape;
-					countInShapeXlsx(shapeGroup); // recursion to iterate through the group
+					countInShapeXlsx(shapeGroup, listLocationOfWords); // recursion to iterate through the group
 
 				} else if (shape instanceof XSSFSimpleShape) {
 					XSSFSimpleShape simpleShape = (XSSFSimpleShape) shape;
-					wordFrequency += countOccurence(simpleShape.getText());
+					
+					int freqOfWord = countOccurence(simpleShape.getText());
+					if (freqOfWord > 0) {
+						listLocationOfWords.add("txtbox: " + simpleShape.getShapeName());
+					}
+					wordFrequency += freqOfWord;
 				}
 			}
 		}
@@ -355,5 +382,20 @@ public class Parser {
 		}
 
 		return occurence;
+	}
+	
+	private static String intToAlphabet(int i) {
+	    if( i<0 ) {
+	        return "-"+intToAlphabet(-i-1);
+	    }
+
+	    int quot = i/26;
+	    int rem = i%26;
+	    char letter = (char)((int)'A' + rem);
+	    if( quot == 0 ) {
+	        return ""+letter;
+	    } else {
+	        return intToAlphabet(quot-1) + letter;
+	    }
 	}
 }
