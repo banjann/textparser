@@ -1,3 +1,6 @@
+// VERSION		AUTHOR			DATE
+// 001			Naparota GDC    October 2024 (initial creation)
+
 package gdc;
 
 import java.io.FileInputStream;
@@ -31,12 +34,12 @@ public class Parser {
 	public static void main(String[] args) {
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 		LocalDateTime now = LocalDateTime.now();
-		
+
 		System.out.println("::START::TEXTPARSER::DATE-TIME::" + (String) dtf.format(now) + "::");
-		fileLocation = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\files";//args[0];
-		templatePath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\template\\textparser.xlsx";//args[1];
-		outputPath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\output";//args[2];
-		
+		fileLocation = args[0];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\files";
+		templatePath = args[1];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\template\\textparser.xlsx";
+		outputPath = args[2];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\output";
+
 		wordFrequency = 0; //initialize count of word
 
 		Helper helper = new Helper();
@@ -81,13 +84,13 @@ public class Parser {
 							case doc:
 								break;
 							}
-							
+
 							if (!hmSheetOfWord.isEmpty()) {
-								hmOccurence.put("file : " + file.getFileName() + "\n" + "sheets : " + hmSheetOfWord.toString(), wordFrequency);
+								hmOccurence.put("ファイル : " + file.getFileName() + "\n" + "シート : " + hmSheetOfWord.toString(), wordFrequency);
 							} else {
-								hmOccurence.put("file : " + file.getFileName(), wordFrequency);
+								hmOccurence.put("ファイル : " + file.getFileName(), wordFrequency);
 							}
-							
+
 						} else {
 							hmOccurence.put(file.getFileName(), null);
 						}
@@ -103,7 +106,7 @@ public class Parser {
 
 	private static void findInXls(String filepath, HashMap<String, Object> hmSheetLocation) throws IOException {
 		System.out.println("STARTING METHOD::findInXls()");
-		
+
 		FileInputStream fis = new FileInputStream(filepath);
 		POIFSFileSystem fs = new POIFSFileSystem(fis);
 		HSSFWorkbook xlswb = new HSSFWorkbook(fs);
@@ -123,7 +126,7 @@ public class Parser {
 				while (cellIterator.hasNext()) {
 					Cell currentCell = cellIterator.next();
 					String strValue = "";
-					
+
 					switch (currentCell.getCellType()) {
 					case NUMERIC:
 						strValue = String.valueOf(currentCell.getNumericCellValue());
@@ -151,7 +154,7 @@ public class Parser {
 			if (patriarch != null) {
 				countInShapeXls(patriarch, listLocationOfWords);
 			}
-			
+
 			if (listLocationOfWords.size() > 0) {
 				hmSheetLocation.put(currentSheet.getSheetName(), listLocationOfWords);
 			}
@@ -177,7 +180,15 @@ public class Parser {
 
 						} else if (shapeInside instanceof HSSFTextbox) {
 							HSSFTextbox textboxShape = (HSSFTextbox) shapeInside;
-							strTextInShape = textboxShape.getString().getString();
+							HSSFRichTextString richStr;
+							try {
+								richStr = textboxShape.getString();
+								if (richStr != null) {
+									strTextInShape = richStr.getString();
+								}
+							} catch (NullPointerException e) {
+								e.printStackTrace();
+							}
 
 						} else if (shapeInside instanceof HSSFPolygon) {
 							HSSFPolygon polygonShape = (HSSFPolygon) shapeInside;
@@ -336,7 +347,7 @@ public class Parser {
 
 				} else if (shape instanceof XSSFSimpleShape) {
 					XSSFSimpleShape simpleShape = (XSSFSimpleShape) shape;
-					
+
 					int freqOfWord = countOccurence(simpleShape.getText());
 					if (freqOfWord > 0) {
 						listLocationOfWords.add("txtbox: " + simpleShape.getShapeName());
@@ -413,7 +424,7 @@ public class Parser {
 
 		return occurence;
 	}
-	
+
 	private static String intToAlphabet(int i) {
 	    if( i<0 ) {
 	        return "-"+intToAlphabet(-i-1);
