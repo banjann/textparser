@@ -66,7 +66,7 @@ public class Parser {
 								break;
 							case xls:
 								try {
-									findInXls(filepath);
+									findInXls(filepath, hmSheetOfWord);
 								} catch (IOException e) {
 									e.printStackTrace();
 								}
@@ -101,7 +101,7 @@ public class Parser {
 		System.out.println("::END::TEXTPARSER::DATE-TIME::" + (String) dtf.format(now) + "::");
 	}
 
-	private static void findInXls(String filepath) throws IOException {
+	private static void findInXls(String filepath, HashMap<String, Object> hmSheetLocation) throws IOException {
 		System.out.println("STARTING METHOD::findInXls()");
 		
 		FileInputStream fis = new FileInputStream(filepath);
@@ -110,6 +110,8 @@ public class Parser {
 
 		Iterator<Sheet> sheetIterator = xlswb.iterator();
 		while (sheetIterator.hasNext()) {
+			ArrayList<String> listLocationOfWords = new ArrayList<String>();
+
 			HSSFSheet currentSheet = (HSSFSheet) sheetIterator.next();
 			Iterator<Row> rowIterator = currentSheet.iterator();
 
@@ -137,46 +139,57 @@ public class Parser {
 					default:
 						break;
 					}
-					wordFrequency += countOccurence(strValue);
+					int freqOfWord = countOccurence(strValue);
+					if (freqOfWord > 0) {
+						listLocationOfWords.add("cell: " + intToAlphabet(currentCell.getColumnIndex()) + String.valueOf(currentCell.getRowIndex() + 1));
+					}
+					wordFrequency += freqOfWord;
 				}
 			}
 			// text from shapes
 			HSSFPatriarch patriarch = currentSheet.getDrawingPatriarch();
 			if (patriarch != null) {
-				countInShapeXls(patriarch);
+				countInShapeXls(patriarch, listLocationOfWords);
+			}
+			
+			if (listLocationOfWords.size() > 0) {
+				hmSheetLocation.put(currentSheet.getSheetName(), listLocationOfWords);
 			}
 		}
 		fis.close();
 		fs.close();
 		xlswb.close();
+
 		System.out.println("ENDING METHOD::findInXls()");
 	}
 
-	private static void countInShapeXls(ShapeContainer<HSSFShape> container) {
+	private static void countInShapeXls(ShapeContainer<HSSFShape> container, ArrayList<String> listLocationOfWords) {
 		System.out.println("STARTING METHOD::countInShapeXls()");
 		if (container != null) {
 			for (HSSFShape shape : container) {
+				String strTextInShape = "";
 				if (shape instanceof HSSFShapeGroup) {
 					HSSFShapeGroup shapeGroup = (HSSFShapeGroup) shape;
 					for (HSSFShape shapeInside : shapeGroup) {
 						if (shapeInside instanceof HSSFShapeGroup) {
 							HSSFShapeGroup innerGroup = (HSSFShapeGroup) shapeInside;
-							countInShapeXls(innerGroup);
+							countInShapeXls(innerGroup, listLocationOfWords);
+
 						} else if (shapeInside instanceof HSSFTextbox) {
 							HSSFTextbox textboxShape = (HSSFTextbox) shapeInside;
-							wordFrequency += countOccurence(textboxShape.getString().getString());
+							strTextInShape = textboxShape.getString().getString();
 
 						} else if (shapeInside instanceof HSSFPolygon) {
 							HSSFPolygon polygonShape = (HSSFPolygon) shapeInside;
-							wordFrequency += countOccurence(polygonShape.getString().getString());
+							strTextInShape = polygonShape.getString().getString();
 
 						} else if (shapeInside instanceof HSSFPicture) {
 							HSSFPicture picShape = (HSSFPicture) shapeInside;
-							wordFrequency += countOccurence(picShape.getString().getString());
+							strTextInShape = picShape.getString().getString();
 
 						} else if (shapeInside instanceof HSSFCombobox) {
 							HSSFCombobox comboShape = (HSSFCombobox) shapeInside;
-							wordFrequency += countOccurence(comboShape.getString().getString());
+							strTextInShape = comboShape.getString().getString();
 
 						} else if (shapeInside instanceof HSSFSimpleShape) {
 							HSSFSimpleShape simpleShape = (HSSFSimpleShape) shapeInside;
@@ -184,29 +197,42 @@ public class Parser {
 							try {
 								richStr = simpleShape.getString();
 								if (richStr != null) {
-									wordFrequency += countOccurence(richStr.getString());
+									strTextInShape = richStr.getString();
 								}
 							} catch (NullPointerException e) {
 								e.printStackTrace();
 							}
 						}
+						int occurenceOfWord = countOccurence(strTextInShape);
+						if (occurenceOfWord > 0) {
+							listLocationOfWords.add("txtbox: " + shapeInside.getShapeName());
+						}
+						wordFrequency += occurenceOfWord;
 					}
 
 				} else if (shape instanceof HSSFTextbox) {
 					HSSFTextbox textboxShape = (HSSFTextbox) shape;
-					wordFrequency += countOccurence(textboxShape.getString().getString());
+					HSSFRichTextString richStr;
+					try {
+						richStr = textboxShape.getString();
+						if (richStr != null) {
+							strTextInShape = richStr.getString();
+						}
+					} catch (NullPointerException e) {
+						e.printStackTrace();
+					}
 
 				} else if (shape instanceof HSSFPolygon) {
 					HSSFPolygon polygonShape = (HSSFPolygon) shape;
-					wordFrequency += countOccurence(polygonShape.getString().getString());
+					strTextInShape = polygonShape.getString().getString();
 
 				} else if (shape instanceof HSSFPicture) {
 					HSSFPicture picShape = (HSSFPicture) shape;
-					wordFrequency += countOccurence(picShape.getString().getString());
+					strTextInShape = picShape.getString().getString();
 
 				} else if (shape instanceof HSSFCombobox) {
 					HSSFCombobox comboShape = (HSSFCombobox) shape;
-					wordFrequency += countOccurence(comboShape.getString().getString());
+					strTextInShape = comboShape.getString().getString();
 
 				} else if (shape instanceof HSSFSimpleShape) {
 					HSSFSimpleShape simpleShape = (HSSFSimpleShape) shape;
@@ -214,12 +240,17 @@ public class Parser {
 					try {
 						richStr = simpleShape.getString();
 						if (richStr != null) {
-							wordFrequency += countOccurence(richStr.getString());
+							strTextInShape = richStr.getString();
 						}
 					} catch (NullPointerException e) {
 						e.printStackTrace();
 					}
 				}
+				int occurenceOfWord = countOccurence(strTextInShape);
+				if (occurenceOfWord > 0) {
+					listLocationOfWords.add("txtbox: " + shape.getShapeName());
+				}
+				wordFrequency += occurenceOfWord;
 			}
 		}
 		System.out.println("ENDING METHOD::countInShapeXls()");
@@ -265,8 +296,7 @@ public class Parser {
 						}
 						int freqOfWord = countOccurence(strValue);
 						if (freqOfWord > 0) {
-							listLocationOfWords.add("cell: " + intToAlphabet(currentCell.getColumnIndex())
-									+ String.valueOf(currentCell.getRowIndex() + 1));
+							listLocationOfWords.add("cell: " + intToAlphabet(currentCell.getColumnIndex()) + String.valueOf(currentCell.getRowIndex() + 1));
 						}
 						wordFrequency += freqOfWord;
 					}
