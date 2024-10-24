@@ -30,6 +30,7 @@ public class Parser {
 	private static String fileLocation;
 	private static String templatePath;
 	private static String outputPath;
+	private static String includeLocation;
 
 	public static void main(String[] args) {
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
@@ -39,6 +40,7 @@ public class Parser {
 		fileLocation = args[0];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\files";
 		templatePath = args[1];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\template\\textparser.xlsx";
 		outputPath = args[2];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\output";
+		includeLocation = args[3];
 
 		wordFrequency = 0; //initialize count of word
 
@@ -85,7 +87,7 @@ public class Parser {
 								break;
 							}
 
-							if (!hmSheetOfWord.isEmpty()) {
+							if (!hmSheetOfWord.isEmpty() && includeLocation.toLowerCase().equals("yes")) {
 								hmOccurence.put("ファイル : " + file.getFileName() + "\n" + "シート : " + hmSheetOfWord.toString(), wordFrequency);
 							} else {
 								hmOccurence.put("ファイル : " + file.getFileName(), wordFrequency);
