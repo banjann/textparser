@@ -36,7 +36,7 @@ public class Helper {
 	private final String OUTPUT_SHEET_COLUMN_C = "合計周波数";
 	private final String OUTPUT_SHEET_COL_FILENAME = "ファイル名";
 	private final String OUTPUT_SHEET_COL_FREQUENCY = "検出数";
-	
+
 	private final String OUTPUT_SHEET_EMPTY_COL_B = "B列が空";
 
 	public HashSet<Sourcefile> getAllFiles(String fileLocation) {
@@ -144,7 +144,7 @@ public class Helper {
 			int rowCount = 1;
 			while (rowIterator.hasNext()) {
 				HashMap<String, Object> hmRow = new HashMap<String, Object>();
-				
+
 				Row currentRow = rowIterator.next();
 				if (rowCount > 1) {
 					Iterator<Cell> cellIterator = currentRow.iterator();
@@ -153,6 +153,7 @@ public class Helper {
 					while (colCount <= 2 && cellIterator.hasNext()) {
 						Cell currentCell = cellIterator.next();
 						String strValue = "";
+
 						switch (currentCell.getCellType()) {
 						case NUMERIC:
 							strValue = String.valueOf(currentCell.getNumericCellValue());
@@ -161,7 +162,6 @@ public class Helper {
 							strValue = currentCell.getStringCellValue();
 							break;
 						}
-
 						if (colCount == 1) {
 							if (strValue.toLowerCase().equals("x")) {
 								hmRow.put(MAP_TOFIND_KEY_INDICATOR, MAP_TOFIND_VAL_INDICATOR_UNINCLUDED);
@@ -171,12 +171,10 @@ public class Helper {
 						} else if (colCount == 2) {
 							hmRow.put(MAP_TOFIND_KEY_VALUE, strValue);
 						}
-
 						colCount++;
 					}
 					listWords.add(hmRow);
 				}
-
 				rowCount++;
 			}
 			xlswb.close();
@@ -184,32 +182,30 @@ public class Helper {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 		return listWords;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public void printToTemplate(List<HashMap<String, Object>> words, String templateLocation, LocalDateTime now, String outPath) {
 		try {
 			FileInputStream fis = new FileInputStream(templateLocation);
 			XSSFWorkbook xlswb = new XSSFWorkbook(fis);
-			
 			XSSFSheet outputSheet = xlswb.getSheet(TEMPLATE_OUTPUT_SHEET);
-			
+
 			// clear contents of output sheet
 			for (int i = outputSheet.getLastRowNum(); i >= outputSheet.getFirstRowNum(); i--) {
 				if (outputSheet.getRow(i) != null) {
 					outputSheet.removeRow(outputSheet.getRow(i));
 				}
 		    }
-			
+
 			XSSFRow row = outputSheet.createRow(0); //create row for the inputs
-			
+
 			// print label for first row
 			row.createCell(0).setCellValue(OUTPUT_SHEET_COLUMN_A);
 			row.createCell(1).setCellValue(OUTPUT_SHEET_COLUMN_B);
 			row.createCell(2).setCellValue(OUTPUT_SHEET_COLUMN_C);
-			
+
 			// print words and details
 			if (words != null && words.size() > 0) {
 				for (int i = 0; i < words.size(); i++) {
@@ -217,25 +213,26 @@ public class Helper {
 					String tagging = (String) currentWordDetails.get(MAP_TOFIND_KEY_INDICATOR);
 					String theWord = (String) currentWordDetails.get(MAP_TOFIND_KEY_VALUE);
 					HashMap<String, Integer> hmExistenceInFiles = (HashMap<String, Integer>) currentWordDetails.get(MAP_TOFIND_KEY_OCCURENCE);
-					
+
 					// print to output sheet
 					row = outputSheet.createRow(i + 1);
 					row.createCell(0).setCellValue(tagging);
 					row.createCell(1).setCellValue(theWord);
-					
+
 					if (hmExistenceInFiles != null && !hmExistenceInFiles.isEmpty()) {
 						Set<String> keys = hmExistenceInFiles.keySet();
 						int colCounter = 0;
 						for (String key : keys) {
 							int indexOfFile = 2 + colCounter;
-							
+
 							row.createCell(indexOfFile).setCellValue(key); // print filename
+
 							if (hmExistenceInFiles.get(key) != null) {
 								row.createCell(indexOfFile + 1).setCellValue(hmExistenceInFiles.get(key)); // print frequency
 							} else {
 								row.createCell(indexOfFile + 1).setCellValue(OUTPUT_SHEET_EMPTY_COL_B); // print null string
 							}
-							
+
 							// label headers of files and frequency
 							outputSheet.getRow(0).createCell(indexOfFile).setCellValue(OUTPUT_SHEET_COL_FILENAME);
 							outputSheet.getRow(0).createCell(indexOfFile + 1).setCellValue(OUTPUT_SHEET_COL_FREQUENCY);
@@ -245,9 +242,8 @@ public class Helper {
 					}
 				}
 			}
-			
 			fis.close();
-			
+
 			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 			String tempFileName = outPath + "\\textparser_" + (String) dtf.format(now) + ".xlsx";
 			FileOutputStream fos =new FileOutputStream(new File(tempFileName));

@@ -428,17 +428,17 @@ public class Parser {
 	}
 
 	private static String intToAlphabet(int i) {
-	    if( i<0 ) {
-	        return "-"+intToAlphabet(-i-1);
-	    }
+		if (i < 0) {
+			return "-" + intToAlphabet(-i - 1);
+		}
 
-	    int quot = i/26;
-	    int rem = i%26;
-	    char letter = (char)((int)'A' + rem);
-	    if( quot == 0 ) {
-	        return ""+letter;
-	    } else {
-	        return intToAlphabet(quot-1) + letter;
-	    }
+		int quot = i / 26;
+		int rem = i % 26;
+		char letter = (char) ((int) 'A' + rem);
+		if (quot == 0) {
+			return "" + letter;
+		} else {
+			return intToAlphabet(quot - 1) + letter;
+		}
 	}
 }
