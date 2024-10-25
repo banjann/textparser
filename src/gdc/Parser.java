@@ -88,13 +88,13 @@ public class Parser {
 							}
 
 							if (!hmSheetOfWord.isEmpty() && includeLocation.toLowerCase().equals("yes")) {
-								hmOccurence.put("ファイル : " + file.getFileName() + "\n" + "シート : " + hmSheetOfWord.toString(), wordFrequency);
+								hmOccurence.put("ファイル名 : " + file.getFileName() + "\n" + "シート : " + hmSheetOfWord.toString(), wordFrequency);
 							} else {
-								hmOccurence.put("ファイル : " + file.getFileName(), wordFrequency);
+								hmOccurence.put("ファイル名 : " + file.getFileName(), wordFrequency);
 							}
 
 						} else {
-							hmOccurence.put(file.getFileName(), null);
+							hmOccurence.put(Helper.OUTPUT_SHEET_EMPTY_COL_B, null);
 						}
 					}
 				}

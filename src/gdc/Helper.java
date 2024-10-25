@@ -29,15 +29,14 @@ public class Helper {
 	public final static String MAP_TOFIND_VAL_INDICATOR_INCLUDED = "o";
 	public final static String MAP_TOFIND_VAL_INDICATOR_UNINCLUDED = "x";
 
-	private final String TEMPLATE_INPUT_SHEET = "言葉";
+	private final String TEMPLATE_INPUT_SHEET = "ゆらぎ用語";
 	private final String TEMPLATE_OUTPUT_SHEET = "出力";
 	private final String OUTPUT_SHEET_COLUMN_A = "スキップフラグ";
 	private final String OUTPUT_SHEET_COLUMN_B = "類似表現";
-	private final String OUTPUT_SHEET_COLUMN_C = "合計周波数";
-	private final String OUTPUT_SHEET_COL_FILENAME = "ファイル名";
+	private final String OUTPUT_SHEET_COL_FILENAME = "結果";
 	private final String OUTPUT_SHEET_COL_FREQUENCY = "検出数";
 
-	private final String OUTPUT_SHEET_EMPTY_COL_B = "B列が空";
+	public final static String OUTPUT_SHEET_EMPTY_COL_B = "B列が空";
 
 	public HashSet<Sourcefile> getAllFiles(String fileLocation) {
 		HashSet<Sourcefile> files = new HashSet<Sourcefile>();
@@ -204,7 +203,6 @@ public class Helper {
 			// print label for first row
 			row.createCell(0).setCellValue(OUTPUT_SHEET_COLUMN_A);
 			row.createCell(1).setCellValue(OUTPUT_SHEET_COLUMN_B);
-			row.createCell(2).setCellValue(OUTPUT_SHEET_COLUMN_C);
 
 			// print words and details
 			if (words != null && words.size() > 0) {
