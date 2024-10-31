@@ -12,7 +12,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -210,23 +212,24 @@ public class Helper {
 					HashMap<String, Object> currentWordDetails = words.get(i);
 					String tagging = (String) currentWordDetails.get(MAP_TOFIND_KEY_INDICATOR);
 					String theWord = (String) currentWordDetails.get(MAP_TOFIND_KEY_VALUE);
-					HashMap<String, Integer> hmExistenceInFiles = (HashMap<String, Integer>) currentWordDetails.get(MAP_TOFIND_KEY_OCCURENCE);
+					Map<String, Integer> sortedExistenceMap = new TreeMap<>(
+							(HashMap<String, Integer>) currentWordDetails.get(MAP_TOFIND_KEY_OCCURENCE)); // TreeMap automatically sorts (naturally) String keys
 
 					// print to output sheet
 					row = outputSheet.createRow(i + 1);
 					row.createCell(0).setCellValue(tagging);
 					row.createCell(1).setCellValue(theWord);
 
-					if (hmExistenceInFiles != null && !hmExistenceInFiles.isEmpty()) {
-						Set<String> keys = hmExistenceInFiles.keySet();
+					if (sortedExistenceMap != null && !sortedExistenceMap.isEmpty()) {
+						Set<String> keys = sortedExistenceMap.keySet();
 						int colCounter = 0;
 						for (String key : keys) {
 							int indexOfFile = 2 + colCounter;
 
 							row.createCell(indexOfFile).setCellValue(key); // print filename
 
-							if (hmExistenceInFiles.get(key) != null) {
-								row.createCell(indexOfFile + 1).setCellValue(hmExistenceInFiles.get(key)); // print frequency
+							if (sortedExistenceMap.get(key) != null) {
+								row.createCell(indexOfFile + 1).setCellValue(sortedExistenceMap.get(key)); // print frequency
 							} else {
 								row.createCell(indexOfFile + 1).setCellValue(OUTPUT_SHEET_EMPTY_COL_B); // print null string
 							}

@@ -40,7 +40,7 @@ public class Parser {
 		fileLocation = args[0];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\files";
 		templatePath = args[1];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\template\\textparser.xlsx";
 		outputPath = args[2];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\output";
-		includeLocation = args[3];
+		includeLocation = args[3];//"yes";
 
 		wordFrequency = 0; //initialize count of word
 
