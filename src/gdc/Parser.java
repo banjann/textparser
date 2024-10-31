@@ -37,10 +37,10 @@ public class Parser {
 		LocalDateTime now = LocalDateTime.now();
 
 		System.out.println("::START::TEXTPARSER::DATE-TIME::" + (String) dtf.format(now) + "::");
-		fileLocation = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\files";//args[0];
-		templatePath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\template\\textparser.xlsx";//args[1];
-		outputPath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\output";//args[2];
-		includeLocation = "yes";//args[3];
+		fileLocation = args[0];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\files";
+		templatePath = args[1];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\template\\textparser.xlsx";
+		outputPath = args[2];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\output";
+		includeLocation = args[3];//"yes";
 
 		wordFrequency = 0; //initialize count of word
 
