@@ -37,21 +37,35 @@ public class Parser {
 		LocalDateTime now = LocalDateTime.now();
 
 		System.out.println("::START::TEXTPARSER::DATE-TIME::" + (String) dtf.format(now) + "::");
-		fileLocation = args[0];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\files";
-		templatePath = args[1];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\template\\textparser.xlsx";
-		outputPath = args[2];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\output";
-		includeLocation = args[3];//"yes";
-
+		fileLocation = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\files";//args[0];
+		templatePath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\template\\textparser.xlsx";//args[1];
+		outputPath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\output";//args[2];
+		includeLocation = "yes";//args[3];
 		wordFrequency = 0; //initialize count of word
 
 		Helper helper = new Helper();
 
 		List<HashMap<String, Object>> wordsToFind = helper.getWordsToFind(templatePath); // look up each word to search
+
+		// count the number of words that need to be searched (for progress display)
+		double numberOfwordsToSearch = 0;
+		for (HashMap<String, Object> rowOfWords : wordsToFind) {
+			if (rowOfWords != null) {
+				if (rowOfWords.get(Helper.MAP_TOFIND_KEY_INDICATOR) != null && 
+					rowOfWords.get(Helper.MAP_TOFIND_KEY_INDICATOR).equals(Helper.MAP_TOFIND_VAL_INDICATOR_INCLUDED)) {
+					numberOfwordsToSearch++;
+				}
+			}
+		}
+
+		double counterOfSearchedWords = 0;
 		for (HashMap<String, Object> rowOfWords : wordsToFind) {
 			HashMap<String, Integer> hmOccurence = new HashMap<String, Integer>();
 
 			if (rowOfWords != null) {
-				if (rowOfWords.get(Helper.MAP_TOFIND_KEY_INDICATOR) != null && rowOfWords.get(Helper.MAP_TOFIND_KEY_INDICATOR).equals(Helper.MAP_TOFIND_VAL_INDICATOR_INCLUDED)) {// only if it is not marked as "x"
+				if (rowOfWords.get(Helper.MAP_TOFIND_KEY_INDICATOR) != null && 
+					rowOfWords.get(Helper.MAP_TOFIND_KEY_INDICATOR).equals(Helper.MAP_TOFIND_VAL_INDICATOR_INCLUDED)) { // only if it is not marked as "x"
+
 					wordToFind = (String) rowOfWords.get(Helper.MAP_TOFIND_KEY_VALUE);
 					HashSet<Sourcefile> searchSpace = helper.getAllFiles(fileLocation);
 
@@ -97,18 +111,24 @@ public class Parser {
 							hmOccurence.put(Helper.OUTPUT_SHEET_EMPTY_COL_B, null);
 						}
 					}
+
+					counterOfSearchedWords++;
+					if (numberOfwordsToSearch != 0) {
+						int progress = (int) ((counterOfSearchedWords / numberOfwordsToSearch) * 100);
+						System.out.println("進捗: " + progress + "%");
+					} else {
+						System.out.println("検索する言葉がない");
+					}
 				}
 			}
 			rowOfWords.put(Helper.MAP_TOFIND_KEY_OCCURENCE, hmOccurence);
 		}
 
 		helper.printToTemplate(wordsToFind, templatePath, now, outputPath);
-		System.out.println("::END::TEXTPARSER::DATE-TIME::" + (String) dtf.format(now) + "::");
+		System.out.println("::END::TEXTPARSER::DATE-TIME::" + (String) dtf.format(LocalDateTime.now()) + "::");
 	}
 
 	private static void findInXls(String filepath, HashMap<String, Object> hmSheetLocation) throws IOException {
-		System.out.println("STARTING METHOD::findInXls()");
-
 		FileInputStream fis = new FileInputStream(filepath);
 		POIFSFileSystem fs = new POIFSFileSystem(fis);
 		HSSFWorkbook xlswb = new HSSFWorkbook(fs);
@@ -164,12 +184,9 @@ public class Parser {
 		fis.close();
 		fs.close();
 		xlswb.close();
-
-		System.out.println("ENDING METHOD::findInXls()");
 	}
 
 	private static void countInShapeXls(ShapeContainer<HSSFShape> container, ArrayList<String> listLocationOfWords) {
-		System.out.println("STARTING METHOD::countInShapeXls()");
 		if (container != null) {
 			for (HSSFShape shape : container) {
 				String strTextInShape = "";
@@ -266,12 +283,9 @@ public class Parser {
 				wordFrequency += occurenceOfWord;
 			}
 		}
-		System.out.println("ENDING METHOD::countInShapeXls()");
 	}
 
 	private static void findInXlsx(String filepath, HashMap<String, Object> hmSheetLocation) throws IOException {
-		System.out.println("STARTING METHOD::findInXlsx()");
-
 		FileInputStream fis = new FileInputStream(filepath);
 		XSSFWorkbook xlswb = new XSSFWorkbook(fis);
 
@@ -326,12 +340,9 @@ public class Parser {
 
 		xlswb.close();
 		fis.close();
-
-		System.out.println("ENDING METHOD::findInXlsx()");
 	}
 
 	private static void countInShapeXlsx(ShapeContainer<XSSFShape> container, ArrayList<String> listLocationOfWords) {
-		System.out.println("STARTING METHOD::countInShapeXlsx()");
 		if (container != null) {
 			for (XSSFShape shape : container) {
 				if (shape instanceof XSSFConnector) {
@@ -358,11 +369,9 @@ public class Parser {
 				}
 			}
 		}
-		System.out.println("ENDING METHOD::countInShapeXlsx()");
 	}
 
 	private static void findInDocx(String filepath) throws Exception {
-		System.out.println("STARTING METHOD::findInDocx()");
 		FileInputStream fis = new FileInputStream(filepath);
 		XWPFDocument docx = new XWPFDocument(fis);
 
@@ -385,11 +394,9 @@ public class Parser {
 
 		fis.close();
 		docx.close();
-		System.out.println("ENDING METHOD::findInDocx()");
 	}
 
 	private static void findInDocxTxtbox(XWPFParagraph paragraph) {
-		System.out.println("STARTING METHOD::findInDocxTxtbox()");
 		XmlObject[] textBoxObjects = paragraph
 				.getCTP()
 				.selectPath(
@@ -410,7 +417,6 @@ public class Parser {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("ENDING METHOD::findInDocxTxtbox()");
 	}
 
 	private static int countOccurence(String from) {
