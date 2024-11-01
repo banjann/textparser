@@ -206,7 +206,7 @@ public class Parser {
 									strTextInShape = richStr.getString();
 								}
 							} catch (NullPointerException e) {
-								e.printStackTrace();
+								//e.printStackTrace(); implement logger
 							}
 
 						} else if (shapeInside instanceof HSSFPolygon) {
@@ -230,7 +230,7 @@ public class Parser {
 									strTextInShape = richStr.getString();
 								}
 							} catch (NullPointerException e) {
-								e.printStackTrace();
+								//e.printStackTrace(); implement logger
 							}
 						}
 						int occurenceOfWord = countOccurence(strTextInShape);
@@ -249,7 +249,7 @@ public class Parser {
 							strTextInShape = richStr.getString();
 						}
 					} catch (NullPointerException e) {
-						e.printStackTrace();
+						//e.printStackTrace(); implement logger
 					}
 
 				} else if (shape instanceof HSSFPolygon) {
@@ -273,7 +273,7 @@ public class Parser {
 							strTextInShape = richStr.getString();
 						}
 					} catch (NullPointerException e) {
-						e.printStackTrace();
+						//e.printStackTrace(); implement logger
 					}
 				}
 				int occurenceOfWord = countOccurence(strTextInShape);
