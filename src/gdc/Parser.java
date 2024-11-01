@@ -34,13 +34,13 @@ public class Parser {
 
 	public static void main(String[] args) {
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
-		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime startTime = LocalDateTime.now();
 
-		System.out.println("::START::TEXTPARSER::DATE-TIME::" + (String) dtf.format(now) + "::");
-		fileLocation = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\files";//args[0];
-		templatePath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\template\\textparser.xlsx";//args[1];
-		outputPath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\output";//args[2];
-		includeLocation = "yes";//args[3];
+		System.out.println("::START::TEXTPARSER::DATE-TIME::" + (String) dtf.format(startTime) + "::");
+		fileLocation = args[0];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\files";
+		templatePath = args[1];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\template\\textparser.xlsx";
+		outputPath = args[2];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\output";
+		includeLocation = args[3];//"yes";
 		wordFrequency = 0; //initialize count of word
 
 		Helper helper = new Helper();
@@ -58,6 +58,7 @@ public class Parser {
 			}
 		}
 
+		// searching the words
 		double counterOfSearchedWords = 0;
 		for (HashMap<String, Object> rowOfWords : wordsToFind) {
 			HashMap<String, Integer> hmOccurence = new HashMap<String, Integer>();
@@ -124,7 +125,7 @@ public class Parser {
 			rowOfWords.put(Helper.MAP_TOFIND_KEY_OCCURENCE, hmOccurence);
 		}
 
-		helper.printToTemplate(wordsToFind, templatePath, now, outputPath);
+		helper.printToTemplate(wordsToFind, templatePath, startTime, outputPath);
 		System.out.println("::END::TEXTPARSER::DATE-TIME::" + (String) dtf.format(LocalDateTime.now()) + "::");
 	}
 
