@@ -60,6 +60,8 @@ public class Parser {
 
 		// searching the words
 		double counterOfSearchedWords = 0;
+		System.out.println("=================================================");
+		System.out.println("進捗率：");
 		for (HashMap<String, Object> rowOfWords : wordsToFind) {
 			HashMap<String, Integer> hmOccurence = new HashMap<String, Integer>();
 
@@ -116,7 +118,7 @@ public class Parser {
 					counterOfSearchedWords++;
 					if (numberOfwordsToSearch != 0) {
 						int progress = (int) ((counterOfSearchedWords / numberOfwordsToSearch) * 100);
-						System.out.println("進捗: " + progress + "%");
+						System.out.println(progress + "%");
 					} else {
 						System.out.println("検索する言葉がない");
 					}
@@ -125,6 +127,7 @@ public class Parser {
 			rowOfWords.put(Helper.MAP_TOFIND_KEY_OCCURENCE, hmOccurence);
 		}
 
+		System.out.println("=================================================");
 		helper.printToTemplate(wordsToFind, templatePath, startTime, outputPath);
 		System.out.println("::END::TEXTPARSER::DATE-TIME::" + (String) dtf.format(LocalDateTime.now()) + "::");
 	}
