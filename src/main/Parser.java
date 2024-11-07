@@ -39,18 +39,18 @@ public class Parser {
 
 		LocalDateTime startTime = LocalDateTime.now();
 
-//		fileLocation = args[0];
-//		templatePath = args[1];
-//		outputPath = args[2];
-//		includeLocation = args[3];
-//		wordFrequency = 0;
+		fileLocation = args[0];
+		templatePath = args[1];
+		outputPath = args[2];
+		includeLocation = args[3];
+		wordFrequency = 0;
 
 		// for testing
-		fileLocation = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\files";
-		templatePath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\template\\textparser.xlsx";
-		outputPath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\output";
-		includeLocation = "yes";
-		wordFrequency = 0;
+//		fileLocation = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\files";
+//		templatePath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\template\\textparser.xlsx";
+//		outputPath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\output";
+//		includeLocation = "yes";
+//		wordFrequency = 0;
 
 		Helper helper = new Helper();
 
@@ -69,6 +69,7 @@ public class Parser {
 
 		// searching the words
 		double counterOfSearchedWords = 0;
+		HashSet<Integer> uniqueProgress = new HashSet<Integer>();
 		System.out.println("===============================================================");
 		System.out.println("進捗率：");
 		for (HashMap<String, Object> rowOfWords : wordsToFind) {
@@ -127,7 +128,9 @@ public class Parser {
 					counterOfSearchedWords++;
 					if (numberOfwordsToSearch != 0) {
 						int progress = (int) ((counterOfSearchedWords / numberOfwordsToSearch) * 100);
-						System.out.println(progress + "%");
+						if (uniqueProgress.add(progress)) {
+							System.out.print(" " + progress + "%");
+						}
 					} else {
 						System.out.println("検索する言葉がない");
 					}
