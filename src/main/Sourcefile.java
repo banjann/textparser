@@ -1,4 +1,4 @@
-package gdc;
+package main;
 
 public class Sourcefile {
 	private String fileName;
