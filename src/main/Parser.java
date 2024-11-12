@@ -139,6 +139,7 @@ public class Parser {
 			rowOfWords.put(Helper.MAP_TOFIND_KEY_OCCURENCE, hmOccurence);
 		}
 
+		System.out.println();
 		System.out.println("===============================================================");
 		helper.printToTemplate(wordsToFind, templatePath, startTime, outputPath);
 
