@@ -93,21 +93,21 @@ public class Parser {
 								try {
 									findInXlsx(filepath, hmSheetOfWord);
 								} catch (IOException e) {
-									e.printStackTrace();
+									logger.error("Error while processing " + file.getFileName(), e);
 								}
 								break;
 							case xls:
 								try {
 									findInXls(filepath, hmSheetOfWord);
 								} catch (IOException e) {
-									e.printStackTrace();
+									logger.error("Error while processing " + file.getFileName(), e);
 								}
 								break;
 							case docx:
 								try {
 									findInDocx(filepath);
 								} catch (IOException e) {
-									e.printStackTrace();
+									logger.error("Error while processing " + file.getFileName(), e);
 								}
 								break;
 							case doc:
@@ -436,7 +436,7 @@ public class Parser {
 					wordFrequency += countOccurence(embeddedPara.getParagraphText());
 				}
 			} catch (XmlException e) {
-				e.printStackTrace();
+				logger.error("Error while getting words from textbox in docx.", e);
 			}
 		}
 	}
