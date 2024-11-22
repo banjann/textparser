@@ -1,12 +1,11 @@
 // VERSION		AUTHOR			DATE
 // 001			Naparota GDC    October 2024 (initial creation)
 
-package gdc;
+package main;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,6 +15,7 @@ import java.util.List;
 import javax.xml.namespace.QName;
 
 import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
 import org.apache.poi.xwpf.usermodel.*;
@@ -24,6 +24,8 @@ import org.apache.xmlbeans.*;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 
 public class Parser {
+	
+	private final static org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getLogger(Parser.class);
 
 	private static int wordFrequency;
 	private static String wordToFind;
@@ -33,15 +35,22 @@ public class Parser {
 	private static String includeLocation;
 
 	public static void main(String[] args) {
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+		logger.info("START-TEXTPARSER");
+
 		LocalDateTime startTime = LocalDateTime.now();
 
-		System.out.println("::START::TEXTPARSER::DATE-TIME::" + (String) dtf.format(startTime) + "::");
-		fileLocation = args[0];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\files";
-		templatePath = args[1];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\template\\textparser.xlsx";
-		outputPath = args[2];//"C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\output";
-		includeLocation = args[3];//"yes";
-		wordFrequency = 0; //initialize count of word
+		fileLocation = args[0];
+		templatePath = args[1];
+		outputPath = args[2];
+		includeLocation = args[3];
+		wordFrequency = 0;
+
+		// for testing
+//		fileLocation = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\files";
+//		templatePath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\template\\textparser.xlsx";
+//		outputPath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\output";
+//		includeLocation = "yes";
+//		wordFrequency = 0;
 
 		Helper helper = new Helper();
 
@@ -60,7 +69,8 @@ public class Parser {
 
 		// searching the words
 		double counterOfSearchedWords = 0;
-		System.out.println("=================================================");
+		HashSet<Integer> uniqueProgress = new HashSet<Integer>();
+		System.out.println("===============================================================");
 		System.out.println("進捗率：");
 		for (HashMap<String, Object> rowOfWords : wordsToFind) {
 			HashMap<String, Integer> hmOccurence = new HashMap<String, Integer>();
@@ -83,21 +93,21 @@ public class Parser {
 								try {
 									findInXlsx(filepath, hmSheetOfWord);
 								} catch (IOException e) {
-									e.printStackTrace();
+									logger.error("Error while processing " + file.getFileName(), e);
 								}
 								break;
 							case xls:
 								try {
 									findInXls(filepath, hmSheetOfWord);
 								} catch (IOException e) {
-									e.printStackTrace();
+									logger.error("Error while processing " + file.getFileName(), e);
 								}
 								break;
 							case docx:
 								try {
 									findInDocx(filepath);
-								} catch (Exception e) {
-									e.printStackTrace();
+								} catch (IOException e) {
+									logger.error("Error while processing " + file.getFileName(), e);
 								}
 								break;
 							case doc:
@@ -118,7 +128,9 @@ public class Parser {
 					counterOfSearchedWords++;
 					if (numberOfwordsToSearch != 0) {
 						int progress = (int) ((counterOfSearchedWords / numberOfwordsToSearch) * 100);
-						System.out.println(progress + "%");
+						if (uniqueProgress.add(progress)) {
+							System.out.print(" " + progress + "%");
+						}
 					} else {
 						System.out.println("検索する言葉がない");
 					}
@@ -127,9 +139,11 @@ public class Parser {
 			rowOfWords.put(Helper.MAP_TOFIND_KEY_OCCURENCE, hmOccurence);
 		}
 
-		System.out.println("=================================================");
+		System.out.println();
+		System.out.println("===============================================================");
 		helper.printToTemplate(wordsToFind, templatePath, startTime, outputPath);
-		System.out.println("::END::TEXTPARSER::DATE-TIME::" + (String) dtf.format(LocalDateTime.now()) + "::");
+
+		logger.info("END-TEXTPARSER");
 	}
 
 	private static void findInXls(String filepath, HashMap<String, Object> hmSheetLocation) throws IOException {
@@ -291,6 +305,8 @@ public class Parser {
 
 	private static void findInXlsx(String filepath, HashMap<String, Object> hmSheetLocation) throws IOException {
 		FileInputStream fis = new FileInputStream(filepath);
+
+		ZipSecureFile.setMinInflateRatio(0);// no zip bomb possibility, handle large files
 		XSSFWorkbook xlswb = new XSSFWorkbook(fis);
 
 		if (xlswb != null) {
@@ -375,8 +391,10 @@ public class Parser {
 		}
 	}
 
-	private static void findInDocx(String filepath) throws Exception {
+	private static void findInDocx(String filepath) throws IOException {
 		FileInputStream fis = new FileInputStream(filepath);
+
+		ZipSecureFile.setMinInflateRatio(0);// no zip bomb possibility, handle large files
 		XWPFDocument docx = new XWPFDocument(fis);
 
 		// text in tables
@@ -418,7 +436,7 @@ public class Parser {
 					wordFrequency += countOccurence(embeddedPara.getParagraphText());
 				}
 			} catch (XmlException e) {
-				e.printStackTrace();
+				logger.error("Error while getting words from textbox in docx.", e);
 			}
 		}
 	}

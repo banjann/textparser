@@ -1,4 +1,4 @@
-package gdc;
+package main;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,6 +23,8 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class Helper {
+
+	private final static org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getLogger(Parser.class);
 
 	public final static String MAP_TOFIND_KEY_INDICATOR = "tag";
 	public final static String MAP_TOFIND_KEY_VALUE = "value";
@@ -181,7 +183,7 @@ public class Helper {
 			xlswb.close();
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error("Error while getting words to find.", e);
 		}
 		return listWords;
 	}
@@ -252,7 +254,7 @@ public class Helper {
 			xlswb.write(fos);
 			xlswb.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error("Error while reporting results.", e);
 		}
 	}
 
