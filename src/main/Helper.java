@@ -28,6 +28,7 @@ public class Helper {
 
 	public final static String MAP_TOFIND_KEY_INDICATOR = "tag";
 	public final static String MAP_TOFIND_KEY_VALUE = "value";
+	public final static String MAP_TOFIND_KEY_UNIFIED_WORD = "unified";
 	public final static String MAP_TOFIND_KEY_OCCURENCE = "occurence";
 
 	public final static String MAP_TOFIND_VAL_INDICATOR_INCLUDED = "o";
@@ -37,6 +38,7 @@ public class Helper {
 	private final String TEMPLATE_OUTPUT_SHEET = "出力";
 	private final String OUTPUT_SHEET_COLUMN_A = "スキップフラグ";
 	private final String OUTPUT_SHEET_COLUMN_B = "類似表現";
+	private final String OUTPUT_SHEET_COLUMN_C = "統一表現";
 	private final String OUTPUT_SHEET_COL_FILENAME = "結果";
 	private final String OUTPUT_SHEET_COL_FREQUENCY = "検出数";
 
@@ -153,7 +155,7 @@ public class Helper {
 					Iterator<Cell> cellIterator = currentRow.iterator();
 
 					int colCount = 1;
-					while (colCount <= 2 && cellIterator.hasNext()) {
+					while (colCount <= 3 && cellIterator.hasNext()) {
 						Cell currentCell = cellIterator.next();
 						String strValue = "";
 
@@ -173,6 +175,8 @@ public class Helper {
 							}
 						} else if (colCount == 2) {
 							hmRow.put(MAP_TOFIND_KEY_VALUE, strValue);
+						} else if (colCount == 3) {
+							hmRow.put(MAP_TOFIND_KEY_UNIFIED_WORD, strValue);
 						}
 						colCount++;
 					}
@@ -207,6 +211,7 @@ public class Helper {
 			// print label for first row
 			row.createCell(0).setCellValue(OUTPUT_SHEET_COLUMN_A);
 			row.createCell(1).setCellValue(OUTPUT_SHEET_COLUMN_B);
+			row.createCell(2).setCellValue(OUTPUT_SHEET_COLUMN_C);
 
 			// print words and details
 			if (words != null && words.size() > 0) {
@@ -214,6 +219,7 @@ public class Helper {
 					HashMap<String, Object> currentWordDetails = words.get(i);
 					String tagging = (String) currentWordDetails.get(MAP_TOFIND_KEY_INDICATOR);
 					String theWord = (String) currentWordDetails.get(MAP_TOFIND_KEY_VALUE);
+					String unifiedWord = (String) currentWordDetails.get(MAP_TOFIND_KEY_UNIFIED_WORD);
 					Map<String, Integer> sortedExistenceMap = new TreeMap<>(
 							(HashMap<String, Integer>) currentWordDetails.get(MAP_TOFIND_KEY_OCCURENCE)); // TreeMap automatically sorts (naturally) String keys
 
@@ -221,12 +227,13 @@ public class Helper {
 					row = outputSheet.createRow(i + 1);
 					row.createCell(0).setCellValue(tagging);
 					row.createCell(1).setCellValue(theWord);
+					row.createCell(2).setCellValue(unifiedWord);
 
 					if (sortedExistenceMap != null && !sortedExistenceMap.isEmpty()) {
 						Set<String> keys = sortedExistenceMap.keySet();
 						int colCounter = 0;
 						for (String key : keys) {
-							int indexOfFile = 2 + colCounter;
+							int indexOfFile = 3 + colCounter;
 
 							row.createCell(indexOfFile).setCellValue(key); // print filename
 

@@ -408,7 +408,7 @@ public class Parser {
 
 		for (XWPFParagraph p : docx.getParagraphs()) {
 			// text in body
-			wordFrequency += countOccurence(p.getParagraphText());
+			wordFrequency += countOccurence(p.getText());
 
 			// text in text boxes
 			findInDocxTxtbox(p);
