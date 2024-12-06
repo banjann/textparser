@@ -39,18 +39,18 @@ public class Parser {
 
 		LocalDateTime startTime = LocalDateTime.now();
 
-//		fileLocation = args[0];
-//		templatePath = args[1];
-//		outputPath = args[2];
-//		includeLocation = args[3];
-//		wordFrequency = 0;
+		fileLocation = args[0];
+		templatePath = args[1];
+		outputPath = args[2];
+		includeLocation = args[3];
+		wordFrequency = 0;
 
 		// for testing
-		fileLocation = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\files";
-		templatePath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\template\\textparser.xlsx";
-		outputPath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\output";
-		includeLocation = "yes";
-		wordFrequency = 0;
+//		fileLocation = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\files";
+//		templatePath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\template\\textparser.xlsx";
+//		outputPath = "C:\\SMARTMETER\\fy24\\04_word_search\\textparser\\output";
+//		includeLocation = "yes";
+//		wordFrequency = 0;
 
 		Helper helper = new Helper();
 
