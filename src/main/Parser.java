@@ -114,10 +114,12 @@ public class Parser {
 								break;
 							}
 
-							if (!hmSheetOfWord.isEmpty() && includeLocation.toLowerCase().equals("yes")) {
-								hmOccurence.put("ファイル名 : " + file.getFileName() + "\n" + "シート : " + hmSheetOfWord.toString(), wordFrequency);
+							String tempKey = "ファイル名 : " + file.getFileName() + "\n" + "シート : " + hmSheetOfWord.toString();
+							if (!hmSheetOfWord.isEmpty() && includeLocation.toLowerCase().equals("yes") && tempKey.length() < 32767) {
+								hmOccurence.put(tempKey, wordFrequency);
 							} else {
-								hmOccurence.put("ファイル名 : " + file.getFileName(), wordFrequency);
+								tempKey = "ファイル名 : " + file.getFileName();
+								hmOccurence.put(tempKey, wordFrequency);
 							}
 
 						} else {
