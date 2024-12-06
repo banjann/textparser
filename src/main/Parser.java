@@ -115,13 +115,10 @@ public class Parser {
 							}
 
 							String tempKey = "ファイル名 : " + file.getFileName() + "\n" + "シート : " + hmSheetOfWord.toString();
-							if (tempKey.length() > 32767) { // character limit of each cell in excel
-								tempKey = "ファイル名 : " + file.getFileName();
-							}
-
-							if (!hmSheetOfWord.isEmpty() && includeLocation.toLowerCase().equals("yes")) {
+							if (!hmSheetOfWord.isEmpty() && includeLocation.toLowerCase().equals("yes") && tempKey.length() < 32767) {
 								hmOccurence.put(tempKey, wordFrequency);
 							} else {
+								tempKey = "ファイル名 : " + file.getFileName();
 								hmOccurence.put(tempKey, wordFrequency);
 							}
 
